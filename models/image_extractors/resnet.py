@@ -1,10 +1,12 @@
-import torch.nn as nn
+from torch import nn
+from torch.nn import functional as F
 from torchvision import models
 
-from .extractor_network import ExtractorNetwork
+
+from .extractor_network import ImageExtractor
 
 
-class ResNetExtractor(ExtractorNetwork):
+class ResNetExtractor(ImageExtractor):
     arch = {
         'resnet18': models.resnet18,
         'resnet34': models.resnet34,
@@ -13,13 +15,15 @@ class ResNetExtractor(ExtractorNetwork):
         'resnet152': models.resnet152,
     }
 
-    def __init__(self, version):
+    def __init__(self, version, freeze):
         super().__init__()
         assert version in ResNetExtractor.arch, \
             f'{version} is not implemented.'
         cnn = ResNetExtractor.arch[version](pretrained=True)
-        self.extractor = nn.Sequential(*list(cnn.children())[:-1])
+        self.extractor = nn.Sequential(*list(cnn.children())[:-2])
         self.feature_dim = cnn.fc.in_features
+        if freeze:
+            self.freeze()
 
-    def forward(self, x):
-        return self.extractor(x).view(x.size(0), -1)
+    def get_feature_map(self, x):
+        return self.extractor(x)

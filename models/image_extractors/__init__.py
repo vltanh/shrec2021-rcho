@@ -1,2 +1,3 @@
-from .efficient_net import EfficientNetExtractor
-from .resnet import ResNetExtractor
+from .efficient_net import *
+from .resnet import *
+from .extractor_network import *

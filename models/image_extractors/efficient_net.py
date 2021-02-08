@@ -1,10 +1,10 @@
 import torch.nn as nn
 
-from .extractor_network import ExtractorNetwork
+from .extractor_network import ImageExtractor
 from efficientnet_pytorch import EfficientNet
 
 
-class EfficientNetExtractor(ExtractorNetwork):
+class EfficientNetExtractor(ImageExtractor):
     def __init__(self, version):
         super().__init__()
         assert version in range(9)
@@ -12,8 +12,5 @@ class EfficientNetExtractor(ExtractorNetwork):
             f'efficientnet-b{version}')
         self.feature_dim = self.extractor._fc.in_features
 
-    def forward(self, x):
-        x = self.extractor.extract_features(x)
-        x = self.extractor._avg_pooling(x)
-        x = x.view(x.size(0), -1)
-        return x
+    def get_feature_map(self, x):
+        return self.extractor.extract_features(x)
