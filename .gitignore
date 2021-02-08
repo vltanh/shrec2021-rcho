@@ -134,5 +134,6 @@ dmypy.json
 # Data
 data
 runs
+backup
 *.pth
 *.zip
