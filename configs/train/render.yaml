@@ -1,4 +1,4 @@
-id: SHREC21-RCHO
+id: shape-centercrop-frozenresnet50-lstm512-0123456-p1-h4-bs16
 pretrained: null
 seed: 3698
 model:
@@ -8,7 +8,8 @@ model:
             name: Base3DObjectRingsExtractor
             args:
                 nheads: 4
-                nrings: 3
+                dropout: 0.1
+                nrings: 7
                 ring_ext_cfg: 
                     name: BaseRingExtractor
                     args:
@@ -16,7 +17,8 @@ model:
                         extractor_cfg:
                             name: ResNetExtractor
                             args:
-                                version: resnet18
+                                version: resnet50
+                                freeze: True
         nclasses: 8
 optimizer:
     name: Adam
@@ -41,12 +43,12 @@ dataset:
         args:
             csv_path: data/list/shape/1_train.csv
             root: data/shape-train-rings/
-            ring_ids: [0, 3, 6]
+            ring_ids: [0, 1, 2, 3, 4, 5, 6]
             is_train: True
         loader:
             name: DataLoader
             args:
-                batch_size: 2
+                batch_size: 16
                 shuffle: True
                 pin_memory: True
     val:
@@ -54,13 +56,12 @@ dataset:
         args:
             csv_path: data/list/shape/1_val.csv
             root: data/shape-train-rings/
-            ring_ids: [0, 3, 6]
-            is_train: True
+            ring_ids: [0, 1, 2, 3, 4, 5, 6]
+            is_train: False
         loader:
             name: DataLoader
             args:
-                batch_size: 2
-                shuffle: True
+                batch_size: 16
                 pin_memory: True
 trainer:
     nepochs: 500

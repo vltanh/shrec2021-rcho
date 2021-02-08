@@ -21,14 +21,14 @@ class BaseRingExtractor(nn.Module):
         # x: [B, V, C, H, W]
         B, V, C, H, W = x.size()
         x = x.reshape(B*V, C, H, W) # B*V, C, H, W
-        x = self.cnn(x) # B*V, D
+        x = self.cnn.get_embedding(x) # B*V, D
         x = x.reshape(B, V, self.cnn_feature_dim) # B, V, D
         x, _ = self.lstm(x) # B, V, D'
         x = x.mean(1) # B, D'
         return x
 
 class Base3DObjectRingsExtractor(nn.Module):
-    def __init__(self, nrings, ring_ext_cfg, nheads):
+    def __init__(self, nrings, ring_ext_cfg, nheads, dropout=0.0):
         super().__init__()
         self.ring_exts = nn.ModuleList([
             getter.get_instance(ring_ext_cfg)
@@ -36,7 +36,7 @@ class Base3DObjectRingsExtractor(nn.Module):
         ])
         self.view_feature_dim = self.ring_exts[0].feature_dim # D
         self.feature_dim = self.view_feature_dim # D'
-        self.attn = nn.MultiheadAttention(self.feature_dim, nheads)
+        self.attn = nn.MultiheadAttention(self.feature_dim, nheads, dropout)
 
     def forward(self, x):
         # x: [B, R, V, C, H, W]

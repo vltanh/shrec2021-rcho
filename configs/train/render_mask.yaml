@@ -1,0 +1,72 @@
+id: shape-wmask-frozenresnet50-lstm512-12345-h4-bs16
+pretrained: null
+seed: 3698
+model:
+    name: BaseClassifier
+    args:
+        extractor_cfg: 
+            name: Base3DObjectRingsExtractor
+            args:
+                nheads: 4
+                dropout: 0.1
+                nrings: 5
+                ring_ext_cfg: 
+                    name: BaseRingExtractor
+                    args:
+                        hidden_dim: 512
+                        extractor_cfg:
+                            name: ImageMaskExtractor
+                            args:
+                                ext_cfg:
+                                    name: ResNetExtractor
+                                    args:
+                                        version: resnet50
+                                        freeze: True
+        nclasses: 8
+optimizer:
+    name: Adam
+    args:
+loss:
+    name: CrossEntropyLoss
+    args:
+metric:
+    - name: Accuracy
+      args:
+          nclasses: 8
+scheduler:
+    name: ReduceLROnPlateau
+    args:
+        mode: min
+        factor: 0.5
+        patience: 5
+        verbose: True
+dataset:
+    train:
+        name: SHREC21_RCHO_Rings_RenderMask
+        args:
+            csv_path: data/list/shape/1_train.csv
+            root: data/shape-train-rings/
+            ring_ids: [1, 2, 3, 4, 5]
+            is_train: True
+        loader:
+            name: DataLoader
+            args:
+                batch_size: 16
+                shuffle: True
+                pin_memory: True
+    val:
+        name: SHREC21_RCHO_Rings_RenderMask
+        args:
+            csv_path: data/list/shape/1_val.csv
+            root: data/shape-train-rings/
+            ring_ids: [1, 2, 3, 4, 5]
+            is_train: False
+        loader:
+            name: DataLoader
+            args:
+                batch_size: 8
+                pin_memory: True
+trainer:
+    nepochs: 500
+    val_step: 1
+    log_step: 1
