@@ -46,7 +46,7 @@ class Trainer():
         self.val_metric = {k: list() for k in self.metric.keys()}
 
         # Instantiate loggers
-        self.save_dir = os.path.join('runs', self.train_id)
+        self.save_dir = os.path.join(sellf.config['trainer']['log_dir'], self.train_id)
         self.tsboard = TensorboardLogger(path=self.save_dir)
 
     def save_checkpoint(self, epoch, val_loss, val_metric):
