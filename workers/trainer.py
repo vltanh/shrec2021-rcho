@@ -4,6 +4,7 @@ from torch.utils import data
 from torchnet import meter
 from tqdm import tqdm
 import numpy as np
+
 import os
 from datetime import datetime
 
@@ -46,7 +47,9 @@ class Trainer():
         self.val_metric = {k: list() for k in self.metric.keys()}
 
         # Instantiate loggers
-        self.save_dir = os.path.join(sellf.config['trainer']['log_dir'], self.train_id)
+        self.save_dir = os.path.join(
+            self.config['trainer']['log_dir'],
+            self.train_id)
         self.tsboard = TensorboardLogger(path=self.save_dir)
 
     def save_checkpoint(self, epoch, val_loss, val_metric):
@@ -111,15 +114,17 @@ class Trainer():
 
                 if (i + 1) % self.log_step == 0 or (i + 1) == len(dataloader):
                     self.tsboard.update_loss(
-                        'train', running_loss.value()[0], epoch * len(dataloader) + i)
+                        'train',
+                        running_loss.value()[0],
+                        epoch * len(dataloader) + i
+                    )
                     running_loss.reset()
 
                 # 8: Update metric
                 outs = detach(outs)
                 lbl = detach(lbl)
                 for m in self.metric.values():
-                    value = m.calculate(outs, lbl)
-                    m.update(value)
+                    m.update(outs, lbl)
 
         print('+ Training result')
         avg_loss = total_loss.value()[0]
@@ -150,8 +155,7 @@ class Trainer():
             outs = detach(outs)
             lbl = detach(lbl)
             for m in self.metric.values():
-                value = m.calculate(outs, lbl)
-                m.update(value)
+                m.update(outs, lbl)
 
         print('+ Evaluation result')
         avg_loss = running_loss.value()[0]
