@@ -1,5 +1,4 @@
 from torch import nn
-from torch.nn import functional as F
 from torchvision import models
 
 
@@ -15,14 +14,14 @@ class ResNetExtractor(ImageExtractor):
         'resnet152': models.resnet152,
     }
 
-    def __init__(self, version, freeze):
+    def __init__(self, version, use_pretrained, is_frozen=False):
         super().__init__()
         assert version in ResNetExtractor.arch, \
             f'{version} is not implemented.'
-        cnn = ResNetExtractor.arch[version](pretrained=True)
+        cnn = ResNetExtractor.arch[version](pretrained=use_pretrained)
         self.extractor = nn.Sequential(*list(cnn.children())[:-2])
         self.feature_dim = cnn.fc.in_features
-        if freeze:
+        if is_frozen:
             self.freeze()
 
     def get_feature_map(self, x):

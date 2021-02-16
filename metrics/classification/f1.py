@@ -16,12 +16,8 @@ class F1():
             )
         self.reset()
 
-    def calculate(self, output, target):
+    def update(self, output, target):
         pred = torch.argmax(output, dim=1)
-        return pred, target
-
-    def update(self, value):
-        pred, target = value
         self.pred += pred.cpu().tolist()
         self.target += target.cpu().tolist()
 

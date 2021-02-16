@@ -8,14 +8,10 @@ class Accuracy():
     def __init__(self, *args, **kwargs):
         self.reset()
 
-    def calculate(self, output, target):
+    def update(self, output, target):
         pred = torch.argmax(output, dim=1)
         correct = (pred == target).sum()
         sample_size = output.size(0)
-        return correct, sample_size
-
-    def update(self, output, target):
-        correct, sample_size = self.calculate(output, target)
         self.correct += correct
         self.sample_size += sample_size
 

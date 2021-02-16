@@ -2,9 +2,6 @@ class MetricTemplate():
     def __init__(self, *args, **kwargs):
         raise NotImplementedError
 
-    def calculate(self, output, target):
-        raise NotImplementedError
-
     def update(self, value):
         raise NotImplementedError
 
