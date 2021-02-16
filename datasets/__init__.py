@@ -1,1 +1,0 @@
-from .shrec21_rcho import *
