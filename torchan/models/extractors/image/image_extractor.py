@@ -1,18 +1,15 @@
+from typing import NewType
 import torch.nn as nn
 from torch.nn import functional as F
 
-from utils import getter
-
-__all__ = ['ImageMaskExtractor']
-
-
-class Extractor(nn.Module):
-    def freeze(self):
-        for p in self.extractor.parameters():
-            p.requires_grad = False
+from ....utils import getter
+from ..extractor import Extractor
 
 
 class ImageExtractor(Extractor):
+    def get_feature_map(self, x):
+        raise NotImplementedError
+
     def get_embedding(self, x):
         x = self.get_feature_map(x)
         x = F.adaptive_avg_pool2d(x, (1, 1))
@@ -57,7 +54,7 @@ class ImageMaskExtractor(Extractor):
         x = x.view(x.size(0), -1)  # B, D
 
         # Normalize
-        fg_area = mask.sum((-1, -2)).unsqueeze(1)  # B, 1
+        fg_area = mask.sum((-1, -2))  # B
         x /= fg_area  # B, D
 
         return x

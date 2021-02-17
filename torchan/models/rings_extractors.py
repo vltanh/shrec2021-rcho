@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from utils import getter
+from torchan.utils import getter
 
 __all__ = ['BaseRingExtractor', 'Base3DObjectRingsExtractor']
 
