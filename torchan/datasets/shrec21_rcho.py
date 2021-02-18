@@ -10,29 +10,30 @@ import os
 __all__ = ['SHREC21_RCHO_Rings_RenderOnly',
            'SHREC21_RCHO_Rings_RenderMask']
 
+
 class SHREC21_RCHO_Rings(data.Dataset):
-    def __init__(self, 
-                 csv_path, 
-                 root, 
-                 ring_ids, 
+    def __init__(self,
+                 csv_path,
+                 root,
+                 ring_ids,
                  is_train=True,
                  vis=False):
         csv_data = csv.reader(open(csv_path))
         next(csv_data)
-        
+
         data, labels = list(zip(*csv_data))
 
         self.labels = list(map(int, labels))
 
         self.data = [
             {
-                mode: 
+                mode:
                 [
                     [
-                        os.path.join(root, 
-                                     f'ring{ring_id}', 
-                                     f'{obj_id:0>4}', 
-                                     mode, 
+                        os.path.join(root,
+                                     f'ring{ring_id}',
+                                     f'{obj_id:0>4}',
+                                     mode,
                                      f'Image{view_id:04d}.png')
                         for view_id in range(1, 13)
                     ]
@@ -70,6 +71,14 @@ class SHREC21_RCHO_Rings(data.Dataset):
                 tvtf.Resize((224, 224)),
             ])
 
+        if vis:
+            self.render_transforms = tvtf.Compose([
+                tvtf.ToTensor(),
+            ])
+
+            self.mask_transforms = tvtf.Compose([
+            ])
+
         self.is_train = is_train
 
     def __getitem__(self, i):
@@ -77,6 +86,7 @@ class SHREC21_RCHO_Rings(data.Dataset):
 
     def __len__(self):
         return len(self.data)
+
 
 class SHREC21_RCHO_Rings_RenderOnly(SHREC21_RCHO_Rings):
     def __getitem__(self, i):
@@ -94,6 +104,7 @@ class SHREC21_RCHO_Rings_RenderOnly(SHREC21_RCHO_Rings):
         ])
 
         return(ims, label)
+
 
 class SHREC21_RCHO_Rings_RenderMask(SHREC21_RCHO_Rings):
     def __getitem__(self, i):
@@ -116,7 +127,7 @@ class SHREC21_RCHO_Rings_RenderMask(SHREC21_RCHO_Rings):
                 torch.tensor(np.array(
                     self.mask_transforms(
                         Image.open(x).convert('L')
-                )) / 255.).long().unsqueeze(0).unsqueeze(0)
+                    )) / 255.).long().unsqueeze(0).unsqueeze(0)
                 for x in views
             ]).unsqueeze(0)
             for views in masks
@@ -126,7 +137,8 @@ class SHREC21_RCHO_Rings_RenderMask(SHREC21_RCHO_Rings):
 
         return (ims, label)
 
+
 if __name__ == '__main__':
-    ds = SHREC21_RCHO_Rings_RenderMask('data/list/shape/1_train.csv', 'data/shape-train-rings', [0, 1])
+    ds = SHREC21_RCHO_Rings_RenderMask(
+        'data/list/shape/1_train.csv', 'data/shape-train-rings', [0, 1])
     ds[0]
-    

@@ -1,4 +1,4 @@
-id: shape-wmask-frozenresnet50-lstm512-135-h4-bs16
+id: shape-wmask-frozenresnet50-lstm512-135-h4-bs16-f1
 pretrained: null
 seed: 3698
 model:
@@ -21,7 +21,8 @@ model:
                                     name: ResNetExtractor
                                     args:
                                         version: resnet50
-                                        freeze: True
+                                        is_frozen: True
+                                        use_pretrained: True
         nclasses: 8
 optimizer:
     name: Adam
@@ -67,7 +68,7 @@ dataset:
                 batch_size: 16
                 pin_memory: True
 trainer:
-    nepochs: 35
+    nepochs: 30
     val_step: 1
     log_step: 1
-    log_dir: '/content/drive/MyDrive/SHREC21/RCHO/runs'
+    log_dir: runs
