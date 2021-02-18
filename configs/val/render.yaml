@@ -1,0 +1,27 @@
+pretrained: runs/shape-centercrop-frozenresnet50-lstm512-135-p1-h4-bs16-f4-2021_02_18-07_50_25/best_metric_F1.pth
+metric:
+    - name: Accuracy
+      args:
+    - name: F1
+      args:
+        nclasses: 8
+    - name: AUC
+      args:
+        nclasses: 8
+    - name: ConfusionMatrix
+      args:
+        nclasses: 8
+        savefig_dir: .
+dataset:
+    name: SHREC21_RCHO_Rings_RenderOnly
+    args:
+        csv_path: data/datasetShape/list/4_val.csv
+        root: data/datasetShape/generated_train
+        ring_ids: [1, 3, 5]
+        is_train: False
+    loader:
+        name: DataLoader
+        args:
+            num_workers: 4
+            batch_size: 4
+            pin_memory: True
