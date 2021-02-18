@@ -1,7 +1,6 @@
 import torch
 from sklearn.metrics import f1_score
 
-
 __all__ = ['F1']
 
 
