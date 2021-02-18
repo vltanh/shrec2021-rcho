@@ -18,7 +18,7 @@ class BaseRingExtractor(nn.Module):
                             batch_first=True,
                             bidirectional=True)
 
-    def forward(self, x):
+    def get_embedding(self, x):
         # x: [B, V, C, H, W]
         B, V, C, H, W = x.size()
         x = x.reshape(B*V, C, H, W)  # B*V, C, H, W
@@ -40,11 +40,11 @@ class Base3DObjectRingsExtractor(nn.Module):
         self.feature_dim = self.view_feature_dim  # D'
         self.attn = nn.MultiheadAttention(self.feature_dim, nheads, dropout)
 
-    def forward(self, x):
+    def get_embedding(self, x):
         # x: [B, R, V, C, H, W]
         B, R, V, C, H, W = x.size()
         x = torch.cat([
-            ring_ext(x[:, i]).unsqueeze(1)
+            ring_ext.get_embedding(x[:, i]).unsqueeze(1)
             for i, ring_ext in enumerate(self.ring_exts)
         ], dim=1)  # B, R, D
         x = x.transpose(0, 1)  # R, B, D
