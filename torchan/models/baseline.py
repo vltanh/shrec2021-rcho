@@ -17,3 +17,9 @@ class BaseClassifier(nn.Module):
     def forward(self, x):
         x = self.extractor.get_embedding(x)
         return self.classifier(x)
+
+    def get_embedding(self, x):
+        return self.extractor.get_embedding(x)
+
+    def get_logit_from_emb(self, embeddings):
+        return self.classifier(embeddings)
