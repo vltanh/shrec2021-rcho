@@ -1,4 +1,6 @@
-from .classification.crossentropy import BCEWithLogitsLoss, WeightedBCEWithLogitsLoss, CrossEntropyLoss
-from .classification.focalloss import FocalLoss
-from .segmentation.diceloss import DiceLoss
-from .mixedloss import MixedLoss
+from .classification.crossentropy import *
+from .classification.focalloss import *
+from .segmentation.diceloss import *
+from .mixedloss import *
+
+from .ring_loss import *

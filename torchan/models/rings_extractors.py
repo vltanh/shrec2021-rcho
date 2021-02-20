@@ -4,7 +4,9 @@ import torch.nn.functional as F
 
 from torchan.utils import getter
 
-__all__ = ['BaseRingExtractor', 'Base3DObjectRingsExtractor']
+__all__ = ['BaseRingExtractor',
+           'Base3DObjectRingsExtractor',
+           'MultiClassifier3DObjectRingsExtractor']
 
 
 class BaseRingExtractor(nn.Module):
@@ -30,8 +32,11 @@ class BaseRingExtractor(nn.Module):
 
 
 class Base3DObjectRingsExtractor(nn.Module):
-    def __init__(self, nrings, ring_ext_cfg, nheads, dropout=0.0):
+    def __init__(self, nrings, ring_ext_cfg, nheads, dropout=0.0, reverse=False):
         super().__init__()
+        self.reverse = reverse
+        if reverse:
+            nrings = 12
         self.ring_exts = nn.ModuleList([
             getter.get_instance(ring_ext_cfg)
             for _ in range(nrings)
@@ -40,8 +45,10 @@ class Base3DObjectRingsExtractor(nn.Module):
         self.feature_dim = self.view_feature_dim  # D'
         self.attn = nn.MultiheadAttention(self.feature_dim, nheads, dropout)
 
-    def get_embedding(self, x):
+    def forward(self, x):
         # x: [B, R, V, C, H, W]
+        if self.reverse:
+            x = x.transpose(1, 2)
         B, R, V, C, H, W = x.size()
         x = torch.cat([
             ring_ext.get_embedding(x[:, i]).unsqueeze(1)
@@ -51,3 +58,27 @@ class Base3DObjectRingsExtractor(nn.Module):
         x, p = self.attn(x, x, x)  # R, B, D
         x = x.mean(0)  # B, D
         return x
+
+    def get_embedding(self, x):
+        return self.forward(x)
+
+
+class MultiClassifier3DObjectRingsExtractor(Base3DObjectRingsExtractor):
+    def forward(self, x):
+        # x: [B, R, V, C, H, W]
+        if self.reverse:
+            x = x.transpose(1, 2)
+        B, R, V, C, H, W = x.size()
+        x = torch.cat([
+            ring_ext.get_embedding(x[:, i]).unsqueeze(1)
+            for i, ring_ext in enumerate(self.ring_exts)
+        ], dim=1)  # B, R, D
+        x = x.transpose(0, 1)  # R, B, D
+        emb, p = self.attn(x, x, x)  # R, B, D
+        emb = emb.mean(0, keepdim=True)  # 1, B, D
+        x = torch.cat([x, emb], dim=0)  # R+1, B, D
+        x = x.transpose(0, 1)  # B, R+1, D
+        return x
+
+    def get_embedding(self, x):
+        return self.forward(x)[:, -1]

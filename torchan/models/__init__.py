@@ -1,3 +1,3 @@
 from .extractors import *
-from .baseline import *
+from .classifier import *
 from .rings_extractors import *

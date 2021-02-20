@@ -1,0 +1,39 @@
+pretrained: runs/shape-multicls-centercrop-frozenresnet50-lstm512-135-p1-h4-bs16-f1-2021_02_20-01_29_21/best_metric_MultiClassifierF1.pth
+metric:
+    - name: RingMetric
+      args:
+        metric_cfg:
+          name: Accuracy
+          args:
+            nclasses: 8
+    - name: RingMetric
+      args:
+        metric_cfg:
+          name: F1
+          args:
+            nclasses: 8
+    - name: RingMetric
+      args:
+        metric_cfg:
+          name: AUC
+          args:
+            nclasses: 8
+    - name: RingMetric
+      args:
+        metric_cfg:
+          name: ConfusionMatrix
+          args:
+            nclasses: 8
+dataset:
+    name: SHREC21_RCHO_Rings_RenderOnly
+    args:
+        csv_path: data/datasetShape/list/1_val.csv
+        root: data/datasetShape/generated_train
+        ring_ids: [1, 3, 5]
+        is_train: False
+    loader:
+        name: DataLoader
+        args:
+            num_workers: 4
+            batch_size: 2
+            pin_memory: True

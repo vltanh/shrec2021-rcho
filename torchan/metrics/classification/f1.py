@@ -1,7 +1,7 @@
 import torch
 from sklearn.metrics import f1_score
 
-__all__ = ['F1']
+__all__ = ['F1', 'MultiClassifierF1']
 
 
 class F1():
@@ -43,23 +43,7 @@ class F1():
             print(f'\t{c}: {s}')
 
 
-if __name__ == '__main__':
-    f1 = F1(nclasses=4, ignore_classes=[1])
-    f1.update(
-        f1.calculate(
-            torch.tensor([[.1, .2, .1, .3],
-                          [.1, .1, .8, .0],
-                          [.1, .5, .2, .2]]),
-            torch.tensor([2, 2, 3])
-        )
-    )
-    f1.summary()
-    f1.update(
-        f1.calculate(
-            torch.tensor([[.9, .1, .0, .0],
-                          [.6, .2, .1, .1],
-                          [.7, .0, .3, .0]]),
-            torch.tensor([0, 1, 2])
-        )
-    )
-    f1.summary()
+class MultiClassifierF1(F1):
+    def update(self, output, target):
+        output = output[:, -1]
+        super().update(output, target)
