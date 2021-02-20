@@ -36,13 +36,12 @@ def val(model, dataloader, metrics, device):
         # Update metrics
         outs = detach(outs)
         lbl = detach(lbl)
-        for m in metrics.values():
+        for _, m in metrics:
             m.update(outs, lbl)
 
-    print('+ Evaluation result')
-    for k in metrics.keys():
-        m = metrics[k].value()
-        metrics[k].summary()
+    print('== Evaluation result ==')
+    for _, m in metrics:
+        m.summary()
 
 
 def generate_device(gpu):
@@ -75,10 +74,10 @@ model = generate_model(config['pretrained'], dev_id, device)
 dataloader = get_single_data(config['dataset'], with_dataset=False)
 
 # Define metrics
-metrics = {
-    mcfg['name']: get_instance(mcfg)
+metrics = [
+    (mcfg['name'], get_instance(mcfg))
     for mcfg in config['metric']
-}
+]
 
 # Perform validation and print result
 val(model, dataloader, metrics, device)
