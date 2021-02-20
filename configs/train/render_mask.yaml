@@ -52,7 +52,7 @@ dataset:
         loader:
             name: DataLoader
             args:
-                batch_size: 16
+                batch_size: 4
                 shuffle: True
                 pin_memory: True
     val:
@@ -65,10 +65,10 @@ dataset:
         loader:
             name: DataLoader
             args:
-                batch_size: 16
+                batch_size: 4
                 pin_memory: True
 trainer:
-    nepochs: 30
+    nepochs: 50
     val_step: 1
     log_step: 1
     log_dir: runs

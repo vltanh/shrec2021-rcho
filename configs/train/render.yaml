@@ -1,4 +1,4 @@
-id: shape-centercrop-frozenresnet50-lstm512-135-p1-h4-bs16-f5
+id: shape-centercrop-frozenresnet50-lstm512-3-p1-h4-bs16-f1
 pretrained: null
 seed: 3698
 model:
@@ -9,7 +9,8 @@ model:
             args:
                 nheads: 4
                 dropout: 0.1
-                nrings: 3
+                nrings: 1
+                reverse: True
                 ring_ext_cfg: 
                     name: BaseRingExtractor
                     args:
@@ -42,9 +43,9 @@ dataset:
     train:
         name: SHREC21_RCHO_Rings_RenderOnly
         args:
-            csv_path: data/datasetShape/list/5_train.csv
+            csv_path: data/datasetShape/list/1_train.csv
             root: data/datasetShape/generated_train
-            ring_ids: [1, 3, 5]
+            ring_ids: [3]
             is_train: True
         loader:
             name: DataLoader
@@ -55,9 +56,9 @@ dataset:
     val:
         name: SHREC21_RCHO_Rings_RenderOnly
         args:
-            csv_path: data/datasetShape/list/5_val.csv
+            csv_path: data/datasetShape/list/1_val.csv
             root: data/datasetShape/generated_train
-            ring_ids: [1, 3, 5]
+            ring_ids: [3]
             is_train: False
         loader:
             name: DataLoader
@@ -65,7 +66,7 @@ dataset:
                 batch_size: 16
                 pin_memory: True
 trainer:
-    nepochs: 30
+    nepochs: 50
     val_step: 1
     log_step: 1
     log_dir: runs

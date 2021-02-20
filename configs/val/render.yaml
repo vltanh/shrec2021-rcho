@@ -1,4 +1,4 @@
-pretrained: runs/shape-centercrop-frozenresnet50-lstm512-135-p1-h4-bs16-f4-2021_02_18-07_50_25/best_metric_F1.pth
+pretrained: backup/shape-centercrop-frozenresnet50-lstm512-135-p1-h4-bs16-f4-2021_02_18-07_50_25/best_metric_F1.pth
 metric:
     - name: Accuracy
       args:
@@ -11,7 +11,6 @@ metric:
     - name: ConfusionMatrix
       args:
         nclasses: 8
-        savefig_dir: .
 dataset:
     name: SHREC21_RCHO_Rings_RenderOnly
     args:
