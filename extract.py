@@ -1,6 +1,5 @@
 import os
 import csv
-import pickle
 import argparse
 
 import torch
@@ -18,7 +17,8 @@ class SHREC21_RCHO_RingsTest:
     def __init__(self,
                  csv_path,
                  root,
-                 ring_ids):
+                 ring_ids,
+                 use_mask=False):
         csv_data = csv.reader(open(csv_path))
         next(csv_data)
         data = [x[0] for x in csv_data]
@@ -36,10 +36,12 @@ class SHREC21_RCHO_RingsTest:
                            std=[0.229, 0.224, 0.225]),
         ])
 
-        self.mask_transforms = tvtf.Compose([
-            tvtf.CenterCrop((352, 352)),
-            tvtf.Resize((224, 224)),
-        ])
+        self.use_mask = use_mask
+        if self.use_mask:
+            self.mask_transforms = tvtf.Compose([
+                tvtf.CenterCrop((352, 352)),
+                tvtf.Resize((224, 224)),
+            ])
 
     def get_by_id(self, obj_id, root, ring_ids):
         d = {
@@ -73,6 +75,20 @@ class SHREC21_RCHO_RingsTest:
             ]).unsqueeze(0)
             for views in data
         ])
+
+        if self.use_mask:
+            masks = self.data[i]['mask']
+            masks = torch.cat([
+                torch.cat([
+                    torch.tensor(np.array(
+                        self.mask_transforms(
+                            Image.open(x).convert('L')
+                        )) / 255.).long().unsqueeze(0).unsqueeze(0)
+                    for x in views
+                ]).unsqueeze(0)
+                for views in masks
+            ])
+            ims = torch.cat([ims, masks], 2)
 
         return ims, obj_id
 
@@ -108,10 +124,17 @@ def parse_args():
                         help='(single) GPU to use (default: None)')
     parser.add_argument('-o', '--output',
                         type=str,
-                        help='output filename and directory')
-    parser.add_argument('-m', '--mode',
+                        help='output directory')
+    parser.add_argument('-i', '--id',
                         type=str,
-                        help='mode of embedding [feature|logit|prob]')
+                        help='model id')
+    parser.add_argument('-m', '--mask',
+                        action='store_true',
+                        help='use mask')
+    parser.add_argument('-n', '--num_workers',
+                        type=int,
+                        default=8,
+                        help='number of CPU workers')
     return parser.parse_args()
 
 
@@ -139,11 +162,20 @@ dev_id, device = generate_device(args.gpu)
 model = generate_model(args.weight, dev_id, device)
 
 # Load data
-dataset = SHREC21_RCHO_RingsTest(args.csv, args.dir, args.ring_ids)
-dataloader = DataLoader(dataset, batch_size=args.batch_size, num_workers=4)
+dataset = SHREC21_RCHO_RingsTest(csv_path=args.csv,
+                                 root=args.dir,
+                                 ring_ids=args.ring_ids,
+                                 use_mask=args.mask)
+dataloader = DataLoader(dataset,
+                        batch_size=args.batch_size,
+                        num_workers=args.num_workers)
 
 # Extract embeddings
-embeddings = []
+embeddings = {
+    'feature': [],
+    'logit': [],
+    'prob': [],
+}
 ids = []
 with torch.no_grad():
     model.eval()
@@ -153,23 +185,26 @@ with torch.no_grad():
         inp = move_to(inp, device)
 
         # Get network outputs
-        if args.mode == 'feature':
-            outs = detach(model.get_embedding(inp)).cpu()
-        elif args.mode == 'logit':
-            outs = detach(model(inp)).cpu()
-        elif args.mode == 'prob':
-            outs = detach(model(inp))
-            outs = torch.softmax(outs, dim=1).cpu()
-        else:
-            raise Exception('Invalid mode.')
+        features = model.get_embedding(inp)
+        logits = model.get_logit_from_emb(features)
+        probs = torch.softmax(logits, dim=1)
 
-        embeddings.append(outs)
+        print(torch.softmax(model(inp)[:, -1], dim=1) - probs)
+
+        embeddings['feature'].append(detach(features).cpu())
+        embeddings['logit'].append(detach(logits).cpu())
+        embeddings['prob'].append(detach(probs).cpu())
+
+        # Get label
         ids += lbl
-embeddings = torch.cat(embeddings, dim=0).numpy()
 
-# Rearrange order
 ids = list(map(int, ids))
-embeddings = embeddings[invert(ids)]
 
-# Save result
-np.save(args.output, embeddings)
+for m in embeddings.keys():
+    embeddings[m] = torch.cat(embeddings[m], dim=0).numpy()
+
+    # Rearrange order
+    embeddings[m] = embeddings[m][invert(ids)]
+
+    # Save result
+    np.save(f'{args.output}/{m}/{args.id}-{m}.npy', embeddings[m])
