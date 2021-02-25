@@ -16,7 +16,7 @@ def parse_args():
                         help="input csv file - csv_path")
     parser.add_argument('-o', '--output', type=str, default=".",
                         help="path to the directory of the output csvs (default = ‘.’)")
-    parser.add_argument('-r', '--raito', type=float, default=0.8,
+    parser.add_argument('-r', '--ratio', type=float, default=0.8,
                         help="ratio of the train subset (default = 0.8)")
     parser.add_argument('-s', '--random_seed', type=int, default=0,
                         help="seed for the randomization process (default = 0)")
