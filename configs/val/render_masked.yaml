@@ -1,4 +1,4 @@
-pretrained: backup/vanilla-f1/best_metric_F1.pth
+pretrained: backup/masked-f1/best_metric_F1.pth
 metric:
   - name: Accuracy
     args:
@@ -12,15 +12,15 @@ metric:
     args:
       nclasses: 8
 dataset:
-  name: SHREC21_RCHO_Rings_RenderOnly
+  name: SHREC21_RCHO_Rings_RenderMask
   args:
-    csv_path: data/datasetShape/list/1_val.csv
-    root: data/datasetShape/generated_train
+    csv_path: data/list/shape/1_val.csv
+    root: data/datasetShape/generated_train/
     ring_ids: [1, 3, 5]
     is_train: False
   loader:
     name: DataLoader
     args:
       num_workers: 8
-      batch_size: 4
+      batch_size: 16
       pin_memory: True

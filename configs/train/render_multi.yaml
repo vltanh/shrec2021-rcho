@@ -1,74 +1,76 @@
-id: shape-multicls-centercrop-frozenresnet50-lstm512-234-p1-h4-bs16-f1
+id: multicls-f1
 pretrained: null
 seed: 3698
 model:
-    name: MultiClassifier
-    args:
-        extractor_cfg: 
-            name: MultiClassifier3DObjectRingsExtractor
-            args:
-                nheads: 4
-                dropout: 0.1
-                nrings: 1
-                reverse: True
-                ring_ext_cfg: 
-                    name: BaseRingExtractor
-                    args:
-                        hidden_dim: 512
-                        extractor_cfg:
-                            name: ResNetExtractor
-                            args:
-                                version: resnet50
-                                is_frozen: True
-                                use_pretrained: True
-        classifier_cfg:
-            nclassifiers: 4
-        nclasses: 8
-optimizer:
-    name: Adam
-    args:
-loss: 
-    name: MultiClassifierLoss 
-    args:
-metric:
-    - name: MultiClassifierF1
+  name: MultiClassifier
+  args:
+    extractor_cfg:
+      name: MultiClassifier3DObjectRingsExtractor
       args:
-          nclasses: 8
-scheduler:
-    name: ReduceLROnPlateau
+        nheads: 4
+        dropout: 0.1
+        nrings: 3
+        ring_ext_cfg:
+          name: BaseRingExtractor
+          args:
+            hidden_dim: 512
+            extractor_cfg:
+              name: ResNetExtractor
+              args:
+                version: resnet50
+                is_frozen: True
+                use_pretrained: True
+    classifier_cfg:
+      nclassifiers: 4
+    nclasses: 8
+optimizer:
+  name: Adam
+  args:
+    lr: 0.00001
+loss:
+  name: MultiClassifierLoss
+  args:
+metric:
+  - name: MultiClassifierF1
     args:
-        mode: min
-        factor: 0.5
-        patience: 5
-        verbose: True
+      nclasses: 8
+scheduler:
+  name: ReduceLROnPlateau
+  args:
+    mode: min
+    factor: 0.5
+    patience: 5
+    verbose: True
 dataset:
-    train:
-        name: SHREC21_RCHO_Rings_RenderOnly
-        args:
-            csv_path: data/datasetShape/list/1_train.csv
-            root: data/datasetShape/generated_train
-            ring_ids: [2, 3, 4]
-            is_train: True
-        loader:
-            name: DataLoader
-            args:
-                batch_size: 16
-                shuffle: True
-                pin_memory: True
-    val:
-        name: SHREC21_RCHO_Rings_RenderOnly
-        args:
-            csv_path: data/datasetShape/list/1_val.csv
-            root: data/datasetShape/generated_train
-            ring_ids: [2, 3, 4]
-            is_train: False
-        loader:
-            name: DataLoader
-            args:
-                batch_size: 16
-                pin_memory: True
+  train:
+    name: SHREC21_RCHO_Rings_RenderOnly
+    args:
+      csv_path: data/datasetShape/list/1_train.csv
+      root: data/datasetShape/generated_train
+      ring_ids: [1, 3, 5]
+      is_train: True
+    loader:
+      name: DataLoader
+      args:
+        num_workers: 8
+        batch_size: 16
+        shuffle: True
+        pin_memory: True
+  val:
+    name: SHREC21_RCHO_Rings_RenderOnly
+    args:
+      csv_path: data/datasetShape/list/1_val.csv
+      root: data/datasetShape/generated_train
+      ring_ids: [1, 3, 5]
+      is_train: False
+    loader:
+      name: DataLoader
+      args:
+        num_workers: 8
+        batch_size: 16
+        pin_memory: True
 trainer:
-    nepochs: 50
-    val_step: 1
-    log_step: 1
-    log_dir: runs
+  nepochs: 50
+  val_step: 1
+  log_step: 1
+  log_dir: runs
