@@ -3,15 +3,29 @@ from torchan.utils import getter
 __all__ = ['RingMetric']
 
 
-def take_last(x):
-    return x[:, -1]
+def take_last(output, target):
+    return output[:, -1], target
+
+
+def take_all(output, target):
+    # output: B, R+1, C
+    # target: B
+    B, R, C = output.size()
+
+    target = target.unsqueeze(0).repeat(R, 1).T  # R+1, B
+    target = target.reshape(-1)  # (R+1)*B
+
+    output = output.reshape(-1, C)  # B*(R+1), C
+
+    return output, target
 
 
 class RingMetric:
     def __init__(self, metric_cfg, strategy='last'):
         self.metric = getter.get_instance(metric_cfg)
         self.strategy = {
-            'last': take_last
+            'last': take_last,
+            'all': take_all
         }[strategy]
 
         self.reset = self.metric.reset
@@ -19,4 +33,4 @@ class RingMetric:
         self.summary = self.metric.summary
 
     def update(self, output, target):
-        return self.metric.update(self.strategy(output), target)
+        return self.metric.update(*self.strategy(output, target))

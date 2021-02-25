@@ -46,39 +46,39 @@ class Base3DObjectRingsExtractor(nn.Module):
         self.attn = nn.MultiheadAttention(self.feature_dim, nheads, dropout)
 
     def forward(self, x):
-        # x: [B, R, V, C, H, W]
+        # x: B, R, V, C, H, W
         if self.reverse:
             x = x.transpose(1, 2)
-        B, R, V, C, H, W = x.size()
         x = torch.cat([
             ring_ext.get_embedding(x[:, i]).unsqueeze(1)
             for i, ring_ext in enumerate(self.ring_exts)
         ], dim=1)  # B, R, D
         x = x.transpose(0, 1)  # R, B, D
-        x, p = self.attn(x, x, x)  # R, B, D
+        x, _ = self.attn(x, x, x)  # R, B, D
         x = x.mean(0)  # B, D
         return x
 
     def get_embedding(self, x):
+        # x: B, R, V, C, H, W
         return self.forward(x)
 
 
 class MultiClassifier3DObjectRingsExtractor(Base3DObjectRingsExtractor):
     def forward(self, x):
-        # x: [B, R, V, C, H, W]
+        # x: B, R, V, C, H, W
         if self.reverse:
             x = x.transpose(1, 2)
-        B, R, V, C, H, W = x.size()
         x = torch.cat([
-            ring_ext.get_embedding(x[:, i]).unsqueeze(1)
+            ring_ext.get_embedding(x[:, i]).unsqueeze(1)  # B, 1, D
             for i, ring_ext in enumerate(self.ring_exts)
         ], dim=1)  # B, R, D
         x = x.transpose(0, 1)  # R, B, D
-        emb, p = self.attn(x, x, x)  # R, B, D
+        emb, _ = self.attn(x, x, x)  # R, B, D
         emb = emb.mean(0, keepdim=True)  # 1, B, D
         x = torch.cat([x, emb], dim=0)  # R+1, B, D
         x = x.transpose(0, 1)  # B, R+1, D
         return x
 
     def get_embedding(self, x):
+        # x: B, R, V, C, H, W
         return self.forward(x)[:, -1]

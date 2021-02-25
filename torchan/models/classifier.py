@@ -1,8 +1,7 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
-from ..utils import getter
+from torchan.utils import getter
 
 __all__ = ['BaseClassifier', 'MultiClassifier']
 
@@ -40,16 +39,18 @@ class MultiClassifier(BaseClassifier):
         ])
 
     def forward(self, x):
-        # x: B, R, D
-        x = self.extractor(x)
+        # x: B, R, *
+        x = self.extractor(x)  # B, R+1, D
         x = torch.cat([
-            cls(x[:, i]).unsqueeze(1)  # B, 1, D
+            cls(x[:, i]).unsqueeze(1)  # B, 1, C
             for i, cls in enumerate(self.classifier)
-        ], dim=1)  # B, R, D
+        ], dim=1)  # B, R+1, C
         return x
 
     def get_embedding(self, x):
-        return x[:, -1]
+        # x: B, R, *
+        return self.extractor.get_embedding(x)  # B, D
 
     def get_logit_from_emb(self, x):
-        return self.classifier[-1](x)
+        # x: B, D
+        return self.classifier[-1](x)  # B, C
