@@ -1,14 +1,20 @@
-import argparse, os, csv
+import argparse
+import os
+import csv
+
 
 def parse_args():
     '''
     Parse arguments
     '''
+    parser = argparse.ArgumentParser(
+        description="To generate a CSV files containing query objects id"
+    )
+    parser.add_argument('-s', '--source', type=str,
+                        help="directory containing query objects - objs_dir")
 
-    parser = argparse.ArgumentParser(description="To generate a CSV files containing query objects id")
-    parser.add_argument('-s', '--source', type=str, help="directory containing query objects - objs_dir")
-    
     return parser.parse_args()
+
 
 def generate_csv_from_dir(objs_dir, out_fn):
     '''
@@ -23,9 +29,11 @@ def generate_csv_from_dir(objs_dir, out_fn):
                 obj_id = obj.split(".")[0]
                 csv_writer.writerow([obj_id])
 
-def main():
+
+if __name__ == '__main__':
     args = parse_args()
     objs_dir = args.source
     generate_csv_from_dir(objs_dir, "test.csv")
+
 
 main()
