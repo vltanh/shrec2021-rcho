@@ -2,6 +2,7 @@ import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
 
+import os
 import argparse
 
 
@@ -18,7 +19,7 @@ def parse_args():
                         help='path to distance matrix txt')
     parser.add_argument('-o', '--out',
                         type=str,
-                        help='path to output directory (must exist)')
+                        help='path to output directory')
     return parser.parse_args()
 
 
@@ -37,6 +38,9 @@ def display_3d_object_on_ax(obj_id, root, ax):
 args = parse_args()
 
 dist_mtx = np.loadtxt(args.distmat)
+
+if not os.path.exists(args.out):
+    os.makedirs(args.out, exist_ok=True)
 
 for qid, qv in enumerate(dist_mtx):
     fig, axes = plt.subplots(1, 6)
