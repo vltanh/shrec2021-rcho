@@ -189,8 +189,6 @@ with torch.no_grad():
         logits = model.get_logit_from_emb(features)
         probs = torch.softmax(logits, dim=1)
 
-        print(torch.softmax(model(inp)[:, -1], dim=1) - probs)
-
         embeddings['feature'].append(detach(features).cpu())
         embeddings['logit'].append(detach(logits).cpu())
         embeddings['prob'].append(detach(probs).cpu())
