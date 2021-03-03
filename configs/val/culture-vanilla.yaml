@@ -1,0 +1,26 @@
+pretrained: backup/culture/vanilla-f2/best_metric_F1.pth
+metric:
+  - name: Accuracy
+    args:
+  - name: F1
+    args:
+      nclasses: 6
+  - name: AUC
+    args:
+      nclasses: 6
+  - name: ConfusionMatrix
+    args:
+      nclasses: 6
+dataset:
+  name: SHREC21_RCHO_Rings_RenderOnly
+  args:
+    csv_path: data/datasetCulture/list/2_val.csv
+    root: data/datasetCulture/generated_train
+    ring_ids: [1, 3, 5]
+    is_train: False
+  loader:
+    name: DataLoader
+    args:
+      num_workers: 8
+      batch_size: 16
+      pin_memory: True

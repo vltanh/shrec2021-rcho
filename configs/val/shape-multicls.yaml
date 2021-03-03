@@ -1,4 +1,4 @@
-pretrained: backup/multicls-f1/best_metric_MultiClassifierF1.pth
+pretrained: backup/multicls-f5/best_metric_MultiClassifierF1.pth
 metric:
   - name: RingMetric
     args:
@@ -31,7 +31,7 @@ metric:
 dataset:
   name: SHREC21_RCHO_Rings_RenderOnly
   args:
-    csv_path: data/datasetShape/list/1_val.csv
+    csv_path: data/datasetShape/list/5_val.csv
     root: data/datasetShape/generated_train
     ring_ids: [1, 3, 5]
     is_train: False
@@ -39,5 +39,5 @@ dataset:
     name: DataLoader
     args:
       num_workers: 8
-      batch_size: 16
+      batch_size: 2
       pin_memory: True
