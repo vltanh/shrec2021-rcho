@@ -127,9 +127,11 @@ dmypy.json
 .vscode
 
 # Data
-data
-runs
-backup
-result
+data/
+runs/
+backup/
+result/
+submit/
+visualization/
 *.pth
 *.zip
