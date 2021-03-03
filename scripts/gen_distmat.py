@@ -116,7 +116,7 @@ def parse_args():
                         help='distance [euclidean|cosine|dotprod]')
     parser.add_argument('-fmt', '--format',
                         type=str,
-                        default='%10.6f',
+                        default='%10.8f',
                         help='printing format of each float')
     parser.add_argument('-r', '--rerank',
                         action='store_true',
