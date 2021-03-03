@@ -1,3 +1,5 @@
+import torch
+
 from torchan.utils import getter
 
 __all__ = ['RingMetric']
@@ -20,12 +22,21 @@ def take_all(output, target):
     return output, target
 
 
+def take_mean(output, target):
+    # output: B, R+1, C
+    # target: B
+    output = torch.softmax(output, dim=2)
+    output = output.mean(dim=1)
+    return output, target
+
+
 class RingMetric:
     def __init__(self, metric_cfg, strategy='last'):
         self.metric = getter.get_instance(metric_cfg)
         self.strategy = {
             'last': take_last,
-            'all': take_all
+            'all': take_all,
+            'mean': take_mean,
         }[strategy]
 
         self.reset = self.metric.reset
