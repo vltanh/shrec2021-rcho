@@ -1,8 +1,24 @@
 ## Dataset preparation
 
-We will be working with the data for the Shape task as an example. The procedure is the same for the Culture task.
+### Download raw dataset
 
-First, make the directory `data` and extract `datasetShape.zip` into it.
+We will be working with the data for the Culture task as an example. The procedure is the same for the Shape task.
+
+We are standing at the root directory of the project, or `.`
+
+1. Make the directory `data`
+
+```
+$ mkdir data
+$ cd data
+```
+
+2. Download and extract `datasetCulture.zip`
+
+```
+$ mkdir datasetShape
+$ unzip datasetShape.zip -d datasetShape
+```
 
 The resulting directory tree should look like this:
 
@@ -20,12 +36,16 @@ Then, we generate the necessary CSV files and the ring dataset.
 
 ### CSV generation
 
-1. Make a new directory called `list` in `./data/datasetShape`.
+1. Make a new directory called `list` in `./data/datasetCulture/`.
+
+```
+mkdir data/datasetCulture/list
+```
 
 2. Run
 
 ```
-python scripts/cla2csv.py --input data/datasetShape/dataset.cla --output data/datasetShape/list/train.csv
+python scripts/gen_csv/cla2csv.py --input data/datasetCulture/dataset.cla --output data/datasetCulture/list/train.csv
 ```
 
 This will generate a `train.csv` containing the object identifiers and the corresponding labels of the 3D objects in the collection (or gallery, train set, etc.).
@@ -34,14 +54,14 @@ This will generate a `train.csv` containing the object identifiers and the corre
 
 | obj_id | class_id |
 | ------ | -------- |
-| 79     | 0        |
-| 80     | 0        |
-| 81     | 0        |
+| 0      | 0        |
+| 1      | 0        |
+| 2      | 0        |
 
 3. Run
 
 ```
-python scripts/generate_test_csv.py --source data/datasetShape/test --output data/datasetShape/list/test.csv
+python scripts/gen_csv/generate_test_csv.py --source data/datasetCulture/test --output data/datasetCulture/list/test.csv
 ```
 
 This will generate a `test.csv` containing the object identifiers of the 3D objects in the query set (or test set).
@@ -52,12 +72,12 @@ This will generate a `test.csv` containing the object identifiers of the 3D obje
 | ------ |
 | 0      |
 | 1      |
-| 2      |
+| 10     |
 
 4. Run
 
 ```
-python scripts/kfold_stratified_split.py --input data/datasetShape/list/train.csv --output data/datasetShape/list
+python scripts/split_data/kfold_stratified_split.py --input data/datasetShape/list/train.csv --output data/datasetShape/list
 ```
 
 This will generate multiple pairs of `<fid>_train.csv` and `<fid>_val.csv` files corresponding to the folds (`<fid>` stands for fold identifier). Each CSV is of the same format as the original `train.csv`.
@@ -66,32 +86,46 @@ By default, it is split into 5 folds. This can be changed.
 
 ### Ring data generation
 
-1. Run
+The ring dataset has been generated beforehand and can be downloaded at
+
+If you want to do it yourself then continue reading, else skip this section.
+
+1. Download the blender tar file, version 2.79 (exclusive). Untar and check the `blender` executive inside.
 
 ```
-    python generate_list.py data/datasetShape
+$ wget https://download.blender.org/release/Blender2.79/blender-2.79-linux-glibc219-x86_64.tar.bz2
+$ tar xjf blender-2.79-linux-glibc219-x86_64.tar.bz2
+$ mv blender-2.79-linux-glibc219-x86_64.tar.bz2 blender-2.79
 ```
 
-This will generate a sub directory `list` in `data/datasetShape` which contains 2 files `model_{phase}.txt` which list the path to the `.obj` files in that corresponding phase.
-
-Example:
+2. With `<phase>` being `train` or `test`, run
 
 ```
-model_train.txt
-train/0158.obj
-train/0219.obj
-...
+blender-2.79/blender -b -P scripts/gen_ring/generate_ring.py -- data/datasetCulture <phase>
 ```
 
-3. Download the blender tar file, version 2.79 (exclusive). Untar and check the `blender` executive inside.
+It will create a checkpoint file `save.txt` as it runs, this file stores the index of the last generated object to resume in case of errors occuring. This file needs to be deleted between generation of each phase (else it will keep resuming).
 
-4. Run
+A subdirectory `generated_<phase>` is created inside the `data/datasetCulture` folder. The structure looks like this:
 
 ```
-    /path/to/blender -b -P run.py -- data/dataset<task> <phase>
+data/
+├─ datasetCulture/
+│  ├─ generated_<phase>/
+│  │  ├─ ring<rid>/
+│  │  │  ├─ <type>/
+│  │  │  │  ├─ Image<vid>.png
 ```
 
-## Extract features
+where
+
+- `rid`: a number (default: 0-6) as ring identifier
+- `type`: `depth`, `mask`, or `render`
+- `view_id`: a number (with leading 0s, default: 0001-0012) as view identifier
+
+## Train
+
+## Extract
 
 ```
 python extract.py \
