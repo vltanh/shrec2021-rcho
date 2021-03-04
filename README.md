@@ -125,36 +125,164 @@ where
 
 ## Train
 
-## Extract
+### Config
+
+The training use a YAML file as configuration. Check `configs/train` for some examples.
+
+### Initiate
+
+To start training, run
+
+```
+python train.py --config configs/train/culture-vanilla.yaml --gpus 0
+```
+
+where:
+
+- `config`: path to the configuration file
+- `gpus`: specify which gpu(s) to use (currently can only handle 1 gpu)
+
+### Monitor
+
+To monitor the training process, run
+
+```
+tensorboard --logdir runs --port 6006
+```
+
+where:
+
+- `logdir`: path to logging directory (`runs` by default, can be changed in configuration file)
+- `port`: port to expose the visualization web app
+
+Keep it running and go to `localhost:6006` on your browser.
+
+### Evaluate
+
+To evaluate a trained model, run
+
+```
+python val.py --config configs/val/culture-vanilla.yaml --gpus 0
+```
+
+where:
+
+- `config`: path to the configuration file
+- `gpus`: specify which gpu(s) to use (currently can only handle 1 gpu)
+
+The result will be a on-screen report of the given metrics.
+
+## Feature Extraction
+
+To extract features using the pretrained model, run
 
 ```
 python extract.py \
- --weight backup/vanilla-f1/best_metric_F1.pth \
- --csv data/datasetShape/dataset.csv \
- --dir data/datasetShape/generated_train \
+ --weight backup/culture-masked-f1/best_metric_F1.pth \
+ --csv data/datasetCulture/train.csv \
+ --dir data/datasetCulture/generated_train \
  --ring_ids 1 3 5 \
+ --mask \
  --batch_size 16 \
- --output result/shape/embeddings \
- --id f1-vanilla-train \
+ --output result/culture/embeddings \
+ --id culture-f1-masked-train \
  --gpu 0
 ```
 
-## Generate distance matrix
+where:
+
+- `--weight`: path to the pretrained weight
+- `--csv`: path to a CSV file containing an `obj_id` column with object identifiers, these will be the objects in request of extraction
+- `--dir`: path to the directory containing rings data
+- `--ring_ids`: list of rings to use
+- `--mask`: if the model needs to use binary mask
+- `--batch_size`: batch size of the data loading
+- `--output`: output director of the extraction (will be created if is not already existed)
+- `--id`: identifier for this model
+- `--gpu`: which gpu to use
+
+The result will be a directory containing `.npy` files. It should look like this.
+
+```
+<output>/
+├─ feature/
+│  ├─ <id>-feature.npy
+├─ prob/
+│  ├─ <id>-prob.npy
+```
+
+Each `.npy` files is a $N \times D$ matrix, where $N$ is the number of objects and $D$ is the dimension of the feature vector.
+
+## Distance matrix
+
+## Generation
+
+Given two embedding matrices (a query can be regarded as a matrix with 1 row), we can generate a distance matrix by running:
 
 ```
 python scripts/postprocess/gen_distmat.py \
-  --query result/shape/embeddings/prob/f1-vanilla-train-prob.npy \
-  --gallery result/shape/embeddings/prob/f1-vanilla-train-prob.npy \
+  --query result/culture/embeddings/prob/culture-f1-masked-train-prob.npy \
+  --gallery result/shape/embeddings/prob/culture-f1-masked-train-prob.npy \
   --mode dotprod \
-  --output result/shape/dist_mtx/f1-vanilla-dotprod-train-train.txt
+  --output result/shape/dist_mtx/f1-masked-dotprod-train-train.txt \
+  --format %10.8f
 ```
 
-## Evaluate distance matrix
+where:
+
+- `query`: path to the embedding matrix of the query
+- `gallery`: path to the embedding matrix of the gallery
+- `mode`: distance metric to be used [dotprod|euclidean|cosine]
+- `output`: filename and directory of the output file
+- `format`: floating point format
+
+The output is a $Nq \times Ng$ matrix $M$ where $Nq, Ng$ are respectively the number of objects in the query and the gallery. It is saved in a `.txt` file.
+
+## Evaluation
+
+Given a distance matrix and two lists of objects with its corresponding category label, we can calculate the retrieval scores by running
 
 ```
 python scripts/evaluate/evaluate_distmat.py \
-  --query data/datasetShape/list/${x}_val.csv \
-  --gallery data/datasetShape/list/${x}_train.csv \
-  --distmat result/shape/dist_mtx/f1-vanilla-dotprod-train-train.txt \
-  --out report-f1-vanilla-dotprod.csv
+  --query data/datasetShape/list/1_val.csv \
+  --gallery data/datasetShape/list/2_train.csv \
+  --distmat result/shape/dist_mtx/culture-f1-masked-dotprod-train-train.txt \
+  --out report-f1-masked-dotprod.csv
 ```
+
+where:
+
+- `query`: path to the CSV file containing `obj_id, class_id`
+- `gallery`: same as `query` but for the gallery
+- `distmat`: path to the distance matrix `.txt` file
+- `output`: filename and directory of the CSV report
+
+The given 2 lists will provide the indices of interest for the row (query) and the column (gallery) of the distance matrix.
+
+The result will be an on-screen summary report and a CSV report on each query.
+
+**Example** (on-screen report)
+
+```
+MAP    0.834007
+NN     0.820225
+FT     0.794053
+ST     1.180526
+
+               MAP       NN        FT        ST
+class_id
+0         0.541112  0.50000  0.542857  0.739286
+1         0.969604  0.96875  0.942034  1.420613
+2         0.010932  0.00000  0.000000  0.000000
+3         0.071429  0.00000  0.000000  0.000000
+4         0.525223  0.50000  0.341667  0.529167
+5         0.707407  0.60000  0.660870  0.800000
+```
+
+**Example** (CSV report)
+
+| obj_id | class_id | MAP                  | NN  | FT                 | ST  |
+| ------ | -------- | -------------------- | --- | ------------------ | --- |
+| 3      | 0        | 0.2                  | 0   | 0.8823529411764706 | 1.0 |
+| 13     | 0        | 0.00390625           | 0   | 0.0                | 0.0 |
+| 20     | 0        | 0.003484320557491289 | 0   | 0.0                | 0.0 |
