@@ -1,3 +1,10 @@
+## Dataset
+
+- RAW dataset:
+  - Shape: [GGDrive](https://drive.google.com/file/d/1E38j-iopOMMzpaRwCRwDKXZpzRptrMga/view)
+  - Culture: [GGDrive](https://drive.google.com/file/d/1rxmMABISRWcNqWNWwKnzH6njdtdcwg0v/view)
+- Generated RingView: [GGDrive](https://drive.google.com/drive/folders/1RNYVodRlUubzQB4IB1bPMe8-NxFEvGfi?usp=sharing)
+
 ## Dataset preparation
 
 ### Download raw dataset
@@ -86,9 +93,7 @@ By default, it is split into 5 folds. This can be changed.
 
 ### Ring data generation
 
-The ring dataset has been generated beforehand and can be downloaded at
-
-If you want to do it yourself then continue reading, else skip this section.
+The ring dataset has been generated and included above, if you want to do it yourself then continue reading, else skip this section.
 
 1. Download the blender tar file, version 2.79 (exclusive). Untar and check the `blender` executive inside.
 
