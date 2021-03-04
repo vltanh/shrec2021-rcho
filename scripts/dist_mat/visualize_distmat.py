@@ -34,7 +34,7 @@ def parse_args():
 
 
 def load_3d_object(obj_id, root, ring=3):
-    im = Image.open(f'{root}/ring{ring}/{obj_id:0>4}/render/Image0001.png')
+    im = Image.open(f'{root}/ring{ring}/{obj_id}/render/Image0001.png')
     return im
 
 

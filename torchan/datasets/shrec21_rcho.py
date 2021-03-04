@@ -32,7 +32,7 @@ class SHREC21_RCHO_Rings(data.Dataset):
                     [
                         os.path.join(root,
                                      f'ring{ring_id}',
-                                     f'{obj_id:0>4}',
+                                     f'{obj_id}',
                                      mode,
                                      f'Image{view_id:04d}.png')
                         for view_id in range(1, 13)

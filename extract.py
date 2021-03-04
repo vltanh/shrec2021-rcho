@@ -50,7 +50,7 @@ class SHREC21_RCHO_RingsTest:
                 [
                     os.path.join(root,
                                  f'ring{ring_id}',
-                                 f'{obj_id:0>4}',
+                                 f'{obj_id}',
                                  mode,
                                  f'Image{view_id:04d}.png')
                     for view_id in range(1, 13)
@@ -173,7 +173,7 @@ dataloader = DataLoader(dataset,
 # Extract embeddings
 embeddings = {
     'feature': [],
-    'logit': [],
+    # 'logit': [],
     'prob': [],
 }
 ids = []
@@ -190,7 +190,7 @@ with torch.no_grad():
         probs = torch.softmax(logits, dim=1)
 
         embeddings['feature'].append(detach(features).cpu())
-        embeddings['logit'].append(detach(logits).cpu())
+        # embeddings['logit'].append(detach(logits).cpu())
         embeddings['prob'].append(detach(probs).cpu())
 
         # Get label
@@ -205,4 +205,6 @@ for m in embeddings.keys():
     embeddings[m] = embeddings[m][invert(ids)]
 
     # Save result
+    if not os.path.exists(f'{args.output}/{m}'):
+        os.makedirs(f'{args.output}/{m}', exist_ok=True)
     np.save(f'{args.output}/{m}/{args.id}-{m}.npy', embeddings[m])
