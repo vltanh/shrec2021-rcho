@@ -1,13 +1,30 @@
-## Dataset
+# Table of content
+
+- [Dataset](#dataset)
+- [Dataset preparation](#dataset-preparation)
+  - [Download raw dataset](#download-raw-dataset)
+  - [CSV generation](#csv-generation)
+  - [Ring data generation](#ring-data-generation)
+- [Train](#train)
+  - [Config](#config)
+  - [Initiate](#initiate)
+  - [Monitor](#monitor)
+  - [Evaluate](#evaluate)
+- [Feature Extraction](#feature-extraction)
+- [Distance matrix](#distance-matrix)
+- [Generation](#generation)
+- [Evaluation](#evaluation)
+
+# Dataset
 
 - RAW dataset:
   - Shape: [GGDrive](https://drive.google.com/file/d/1E38j-iopOMMzpaRwCRwDKXZpzRptrMga/view)
   - Culture: [GGDrive](https://drive.google.com/file/d/1rxmMABISRWcNqWNWwKnzH6njdtdcwg0v/view)
 - Generated RingView: [GGDrive](https://drive.google.com/drive/folders/1RNYVodRlUubzQB4IB1bPMe8-NxFEvGfi?usp=sharing)
 
-## Dataset preparation
+# Dataset preparation
 
-### Download raw dataset
+## Download raw dataset
 
 We will be working with the data for the Culture task as an example. The procedure is the same for the Shape task.
 
@@ -41,7 +58,7 @@ The resulting directory tree should look like this:
 
 Then, we generate the necessary CSV files and the ring dataset.
 
-### CSV generation
+## CSV generation
 
 1. Make a new directory called `list` in `./data/datasetCulture/`.
 
@@ -91,7 +108,7 @@ This will generate multiple pairs of `<fid>_train.csv` and `<fid>_val.csv` files
 
 By default, it is split into 5 folds. This can be changed.
 
-### Ring data generation
+## Ring data generation
 
 The ring dataset has been generated and included above, if you want to do it yourself then continue reading, else skip this section.
 
@@ -128,13 +145,13 @@ where
 - `type`: `depth`, `mask`, or `render`
 - `view_id`: a number (with leading 0s, default: 0001-0012) as view identifier
 
-## Train
+# Train
 
-### Config
+## Config
 
 The training use a YAML file as configuration. Check `configs/train` for some examples.
 
-### Initiate
+## Initiate
 
 To start training, run
 
@@ -147,7 +164,7 @@ where:
 - `config`: path to the configuration file
 - `gpus`: specify which gpu(s) to use (currently can only handle 1 gpu)
 
-### Monitor
+## Monitor
 
 To monitor the training process, run
 
@@ -162,7 +179,7 @@ where:
 
 Keep it running and go to `localhost:6006` on your browser.
 
-### Evaluate
+## Evaluate
 
 To evaluate a trained model, run
 
@@ -177,7 +194,7 @@ where:
 
 The result will be a on-screen report of the given metrics.
 
-## Feature Extraction
+# Feature Extraction
 
 To extract features using the pretrained model, run
 
@@ -218,9 +235,9 @@ The result will be a directory containing `.npy` files. It should look like this
 
 Each `.npy` files is a $N \times D$ matrix, where $N$ is the number of objects and $D$ is the dimension of the feature vector.
 
-## Distance matrix
+# Distance matrix
 
-## Generation
+# Generation
 
 Given two embedding matrices (a query can be regarded as a matrix with 1 row), we can generate a distance matrix by running:
 
@@ -243,7 +260,7 @@ where:
 
 The output is a $Nq \times Ng$ matrix $M$ where $Nq, Ng$ are respectively the number of objects in the query and the gallery. It is saved in a `.txt` file.
 
-## Evaluation
+# Evaluation
 
 Given a distance matrix and two lists of objects with its corresponding category label, we can calculate the retrieval scores by running
 
